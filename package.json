@@ -3,8 +3,17 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "directories": {
+    "test": "__test__"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./dist/src/server.js",
+    "dev": "nodemon ./app.ts --exec ts-node",
+    "build": "tsc",
+    "lint": "eslint --ignore-path .gitignore . --ext .ts",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "NODE_ENV=test npx jest --verbose",
+    "test:watch": "NODE_ENV=test npm run test -- --watchAll"
   },
   "keywords": [],
   "author": "JeanDev <mrjunior127@gmail.com> (https://github.com/Jean-Dv)",
