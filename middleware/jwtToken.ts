@@ -3,13 +3,24 @@ import passport from "passport";
 import { Strategy } from "passport-jwt";
 import { ExtractJwt } from "passport-jwt";
 
-export const init = () => {
-	const opts = {
-		jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-		secretOrKey: 'secretPassword',
+import { routerPrefix } from "../app";
+
+export class MiddlewareJson {
+	init() {
+		const opts = {
+			jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('JWT'),
+			secretOrKey: 'secretPassword'
+		}
+		passport.use(new Strategy(opts, (decoded, done) => {
+			return done(null, decoded)
+		}))
 	}
-	passport.use(new Strategy(opts, (decoded, done) => {
-		console.log(decoded)
-		return done(null, decoded)
-	}))
+
+	passportJwtMiddeware(req: Request, res: Response, next: any) {
+		if (req.path == `${routerPrefix}/` 
+		|| req.path == `${routerPrefix}/auth/login`){
+			return next();
+		}
+		return passport.authenticate('jwt', {session:false})(req, res, next)
+	}
 }
