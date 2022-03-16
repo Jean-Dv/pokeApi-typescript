@@ -1,4 +1,8 @@
 import express, { Application } from 'express'
+import passport from 'passport';
+
+import { init } from '../middleware/jwtToken';
+import { teamsRouter } from '../apiServices/teams/teams.router';
 
 export class Server {
 	readonly app: Application;
@@ -10,6 +14,7 @@ export class Server {
 		this.routerPrefix = '/api/v1';
 		this.config();
 		this.middlewares();
+		this.routes();
 	}
 
 	config():void {
@@ -17,8 +22,14 @@ export class Server {
 	}
 
 	middlewares():void {
+		init();
 		this.app.use(express.json());
 		this.app.use(express.urlencoded({ extended: false }));
+		this.app.use(passport.authenticate('jwt', {session:false}));
+	}
+
+	routes():void {
+		this.app.use(`${this.routerPrefix}/teams`, teamsRouter);
 	}
 
 	start() {

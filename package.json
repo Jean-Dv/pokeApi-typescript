@@ -13,7 +13,7 @@
     "lint": "eslint --ignore-path .gitignore . --ext .ts",
     "lint:fix": "npm run lint -- --fix",
     "test": "NODE_ENV=test npx jest --verbose",
-    "test:watch": "NODE_ENV=test npm run test -- --watchAll"
+    "test:watch": "NODE_ENV=test npm run test -- --watchAll --detectOpenHandles"
   },
   "keywords": [],
   "author": "JeanDev <mrjunior127@gmail.com> (https://github.com/Jean-Dv)",
@@ -35,6 +35,8 @@
     "@types/mongodb-memory-server": "^2.3.0",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^17.0.21",
+    "@types/passport": "^1.0.7",
+    "@types/passport-jwt": "^3.0.6",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
