@@ -4,5 +4,5 @@ export const teamsRouter = Router();
 
 teamsRouter.route('/')
 .get((req: Request, res: Response) => {
-	res.status(200);
+	res.status(200).send();
 })

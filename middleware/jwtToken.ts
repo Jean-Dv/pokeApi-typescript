@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import { Strategy } from "passport-jwt";
 import { ExtractJwt } from "passport-jwt";
@@ -16,9 +16,9 @@ export class MiddlewareJson {
 		}))
 	}
 
-	passportJwtMiddeware(req: Request, res: Response, next: any) {
-		if (req.path == `${routerPrefix}/` 
-		|| req.path == `${routerPrefix}/auth/login`){
+	passportJwtMiddeware(req: Request, res: Response, next: NextFunction) {
+		if (req.url === `${routerPrefix}/` 
+		|| req.url === `${routerPrefix}/auth/login`){
 			return next();
 		}
 		return passport.authenticate('jwt', {session:false})(req, res, next)
