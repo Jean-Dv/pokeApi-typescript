@@ -4,12 +4,10 @@ import { appServer, server, routerPrefix } from '../app';
 import { UserController } from '../apiServices/auth/auth.controller';
 
 beforeAll(() => {
-	registerUser('admin@admin.com', '1234')
+	const userController = new UserController();
+	userController.registerUser('admin@admin.com', '1234')
 })
 
-afterAll(() => {
-	server.close();
-}) 
 describe(`POST ${routerPrefix}`, () => {
 	test('should return 401 when no jwt token available', async () => {
 		const res = await request(appServer)
@@ -30,5 +28,19 @@ describe(`POST ${routerPrefix}`, () => {
 		expect(res.statusCode).toBe(200);
 		expect(res.body.token).toBeDefined();
 	})
+	test('should return 200 when jwt is valid', async () => {
+		const res = await request(appServer)
+		.post(`${routerPrefix}/auth/login`)
+		.set('Accept', 'application/json')
+		.send({email: 'admin@admin.com', password: '1234'});
+		expect(res.statusCode).toBe(200);
+		const resTeams = await request(appServer)
+		.get(`${routerPrefix}/teams`)
+		.set('Authorization', `JWT ${res.body.token}`)
+		expect(resTeams.statusCode).toBe(200);
+	})
 })
 
+afterAll(() => {
+	server.close();
+}) 

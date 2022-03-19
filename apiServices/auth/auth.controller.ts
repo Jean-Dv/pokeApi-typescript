@@ -1,88 +1,53 @@
-import { v4 }from 'uuid';
+import { v4 } from 'uuid';
 
 import { comparePassword, hashPasswordSync } from '../../config/hashed';
+import { bootstrapTeam } from '../teams/teams.controller';
 
 interface UsersDatabase {
 	email: string;
 	password: string;
 }
 
-export class UserController {
-	private usersDatabase: { [key:string]: UsersDatabase };
-	private email: string;
-	private password: string;
-	constructor(reqEmail:string, reqPassword:string) {
-		this.usersDatabase = {};
-		this.email = reqEmail;
-		this.password = reqPassword;
-	}
+const usersDatabase: { [key:string]: UsersDatabase } = {};
 
-	registerUser(): void {
-		let hashedPwd = hashPasswordSync(this.password);
-		this.usersDatabase[v4()] = {
-			email: this.email,
+export class UserController {
+	registerUser(email: string, password: string): void {
+		let hashedPwd = hashPasswordSync(password);
+		let userId = v4();
+		usersDatabase[userId] = {
+			email: email,
 			password: hashedPwd
 		}
+		bootstrapTeam(userId);
 	}
 
-	getUserIdFromEmail(): object {
-		for(let user in userDatabase) {
-			if(userDatabase[user].email === this.email) {
-				return userDatabase[user];
+	getUserIdFromEmail(email: string): UsersDatabase {
+		for(let user in usersDatabase) {
+			if(usersDatabase[user].email === email) {
+				return usersDatabase[user];
 			}
 		}
-		return {};
+		return { email: '', password: '' }
 	}
 
-	getUserId():string {
-		for(let user in userDatabase) {
-			if(userDatabase[user].email === this.email) {
+	getUserId(email: string):string {
+		for(let user in usersDatabase) {
+			if(usersDatabase[user].email === email) {
 				return user
 			}
 		}
 		return '';
 	}
 
-	checkUserCredentials():boolean {
-		let user = getUserIdFromEmail(this.email);
+	getUser(userId: string):any{
+		return usersDatabase[userId];
+	}
+
+	checkUserCredentials(email: string, password: string):boolean {
+		let user = this.getUserIdFromEmail(email);
 		if(user) {
-			return comparePassword(this.password, user.password);
+			return comparePassword(password, user.password);
 		}
 		return false;
 	}
-}
-
-const userDatabase: { [key: string]: UsersDatabase } = {};
-
-export const registerUser = (email: string, password: string) => {
-	let hashedPwd = hashPasswordSync(password);
-	userDatabase[v4()] = {
-		email: email,
-		password: hashedPwd
-	}
-	console.log(userDatabase)
-}
-
-const getUserIdFromEmail = (email:string)=> {
-	for (let user in userDatabase) {
-		if ( userDatabase[user].email === email ) {
-			return userDatabase[user];
-		}
-	}
-}
-
-export const getUserId = (email:string) => {
-	for (let user in userDatabase) {
-		if (userDatabase[user].email === email) {
-			return user
-		}
-	}
-}
-
-export const checkUserCredentials = (email:string, password: string):boolean => {
-	let user = getUserIdFromEmail(email);
-	if (user) {
-		return comparePassword(password, user.password);
-	}
-	return false;
 }
