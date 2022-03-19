@@ -3,8 +3,9 @@ import request from 'supertest';
 import { appServer, server, routerPrefix } from '../app';
 import { UserController } from '../apiServices/auth/auth.controller';
 
+const userController = new UserController();
+
 beforeAll(() => {
-	const userController = new UserController();
 	userController.registerUser('admin@admin.com', '1234')
 })
 
@@ -43,4 +44,5 @@ describe(`POST ${routerPrefix}`, () => {
 
 afterAll(() => {
 	server.close();
+	userController.cleanUpUsers();
 }) 

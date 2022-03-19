@@ -1,6 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 
-import { getTeamOfUser, setTeamOfUser } from './teams.http';
+import {
+	getTeamOfUser,
+	setTeamOfUser,
+	addPokemon
+} from './teams.http';
 
 export const teamsRouter = Router();
 
@@ -8,7 +12,5 @@ teamsRouter.route('/')
 .get(getTeamOfUser)
 .put(setTeamOfUser)
 
-teamsRouter.route('/pokemons')
-.post((req: Request, res: Response) => {
-	res.status(200).send('Hello World!')
-})
+teamsRouter.route('/pokemon')
+.post(addPokemon)
