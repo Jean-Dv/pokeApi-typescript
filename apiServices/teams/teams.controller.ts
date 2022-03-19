@@ -3,18 +3,49 @@ interface NamePokemon {
 }
 const teamsDatabase: { [key: string]: NamePokemon } = {};
 
-export const bootstrapTeam = (userId: string) => {
-	teamsDatabase[userId] = []; 
-}
+export class TeamsController {
+	constructor() {}
+	
+	/**
+	 * @param {string} userId - Param userId 
+	 * @returns {void} This update team with user
+	*/
+	bootstrapTeam(userId: string):void {
+		teamsDatabase[userId] = [];
+	}
+	
+	/**
+	 * @param {string} userId
+	 * @returns {NamePokemon} - Structure of interface
+	*/
+	getTeamOfUser(userId: string): NamePokemon {
+		return teamsDatabase[userId];
+	}
+	
+	/**
+	 * @param {string} userId
+	 * @param {string} pokemon
+	 * @returns {void} add data to teamsDatabase
+	*/
+	addPokemon(userId:string, pokemon: object):void {
+		teamsDatabase[userId].push(pokemon)
+	}
 
-export const getTeamOfUser = (userId: string) => {
-	return teamsDatabase[userId];
-}
+	/**
+	 * @param {string} userId
+	 * @param {object} team
+	 * @returns {void} update all teamsDatabase
+	*/
+	setTeam(userId:string, team: object):void {
+		teamsDatabase[userId] = team;
+	}
 
-export const addPokemon = (userId: string, pokemonName: string) => {
-	teamsDatabase[userId].push({name: pokemonName});
-}
-
-export const setTeam = (userId: string, team: object) => {
-	teamsDatabase[userId] = team;
+	/**
+	 * @returns {void} clear database
+	 */
+	cleanUpTeam():void {
+		for(let user in teamsDatabase) {
+			teamsDatabase[user] = [];
+		}
+	}
 }
