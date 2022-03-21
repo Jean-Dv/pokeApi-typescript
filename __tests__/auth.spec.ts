@@ -9,6 +9,8 @@ beforeAll(() => {
 	userController.registerUser('admin@admin.com', '1234')
 })
 
+beforeEach(()=>{}, 50000)
+
 describe(`POST ${routerPrefix}`, () => {
 	test('should return 401 when no jwt token available', async () => {
 		const res = await request(appServer)

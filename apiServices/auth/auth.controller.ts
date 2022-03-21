@@ -8,7 +8,7 @@ interface UsersDatabase {
 	password: string;
 }
 
-let usersDatabase: { [key:string]: UsersDatabase } = {};
+let usersDatabase: { [userId:string]: UsersDatabase } = {};
 const teamsController = new TeamsController();
 
 export class UserController {
@@ -17,48 +17,56 @@ export class UserController {
 	 * @param {string} password -> Password coming from request
 	 * @return {void} Create User and Asociate teamsPokemon
 	 */
-	registerUser(email: string, password: string): void {
-		let hashedPwd = hashPasswordSync(password);
-		let userId = v4();
-		usersDatabase[userId] = {
-			email: email,
-			password: hashedPwd
-		}
-		teamsController.bootstrapTeam(userId);
+	registerUser(email: string, password: string): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			let hashedPwd = hashPasswordSync(password);
+			let userId = v4();
+			usersDatabase[userId] = {
+				email: email,
+				password: hashedPwd
+			}
+			await teamsController.bootstrapTeam(userId);
+			resolve();
+		})
 	}
 	
 	/**
 	 * @param {string} email -> Email coming from request
 	 * @return {UsersDatabase} -> Interface UsersDatabase
 	 */
-	getUserIdFromEmail(email: string): UsersDatabase {
-		for(let user in usersDatabase) {
-			if(usersDatabase[user].email === email) {
-				return usersDatabase[user];
+	getUserIdFromEmail(email: string): Promise<UsersDatabase> {
+		return new Promise(async (resolve, reject) => {
+			for(let user in usersDatabase) {
+				if(usersDatabase[user].email === email) {
+					resolve(usersDatabase[user]);
+				}
 			}
-		}
-		return { email: '', password: '' }
+		})
 	}
 	
 	/**
 	 * @param {string} email -> Email coming from request
 	 * @return {string} userId -> id create uuid.v4()
 	 */
-	getUserId(email: string):string {
-		for(let user in usersDatabase) {
-			if(usersDatabase[user].email === email) {
-				return user
+	getUserId(email: string):Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			for(let user in usersDatabase) {
+				if(usersDatabase[user].email === email) {
+					resolve(user);
+				}
 			}
-		}
-		return '';
+			reject('No user found');
+		})
 	}
 	
 	/**
 	 * @param {string} userId -> userId uuid.v4()
 	 * @return { UsersDatabase } -> Interface UsersDatabase
 	 */
-	getUser(userId: string): UsersDatabase{
-		return usersDatabase[userId];
+	getUser(userId: string): Promise<UsersDatabase> {
+		return new Promise(async (resolve, reject) => {
+			resolve(usersDatabase[userId]);
+		})
 	}
 
 	/**
@@ -66,18 +74,23 @@ export class UserController {
 	 * @param {string} password -> Password coming from request
 	 * @return {boolean} comparePassword -> compare plain password with hashed in database
 	 */
-	checkUserCredentials(email: string, password: string):boolean {
-		let user = this.getUserIdFromEmail(email);
-		if(user) {
-			return comparePassword(password, user.password);
-		}
-		return false;
+	checkUserCredentials(email: string, password: string): Promise<boolean> {
+		return new Promise(async (resolve, reject) => {
+			let user = await (this.getUserIdFromEmail(email));
+			if(user) {
+				resolve(comparePassword(password, user.password));
+			}
+			reject(false);
+		})
 	}
 
 	/**
 	 * @return {void} clear Database
 	 */
-	cleanUpUsers(): void {
-		usersDatabase = {};
+	cleanUpUsers(): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			usersDatabase = {};
+			resolve();
+		})
 	}
 }

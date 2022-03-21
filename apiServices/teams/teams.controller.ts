@@ -8,44 +8,72 @@ export class TeamsController {
 	
 	/**
 	 * @param {string} userId - Param userId 
-	 * @returns {void} This update team with user
+	 * @returns {Promise<void>} This update team with user
 	*/
-	bootstrapTeam(userId: string):void {
-		teamsDatabase[userId] = [];
+	bootstrapTeam(userId: string):Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			teamsDatabase[userId] = [];
+			resolve();
+		})
 	}
 	
 	/**
 	 * @param {string} userId
-	 * @returns {NamePokemon} - Structure of interface
+	 * @returns {Promise<NamePokemon>} - Structure of interface
 	*/
-	getTeamOfUser(userId: string): NamePokemon {
-		return teamsDatabase[userId];
+	getTeamOfUser(userId: string): Promise<NamePokemon> {
+		return new Promise(async (resolve, reject) => {
+			resolve(teamsDatabase[userId]);
+		})
 	}
 	
 	/**
 	 * @param {string} userId
 	 * @param {string} pokemon
-	 * @returns {void} add data to teamsDatabase
+	 * @returns {Promise<void>} add data to teamsDatabase
 	*/
-	addPokemon(userId:string, pokemon: object):void {
-		teamsDatabase[userId].push(pokemon)
+	addPokemon(userId:string, pokemon: object): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			teamsDatabase[userId].push(pokemon);
+			resolve();
+		})
+	}
+
+	/**
+	 * @param {string} userId
+	 * @param {string} pokemonIndex
+	 * @returns {Promise<void>} delete pokemon in the database
+	 */
+	deletePokemonAt(userId:string, pokemonIndex: number): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			if(teamsDatabase[userId][pokemonIndex]) {
+				teamsDatabase[userId].splice(pokemonIndex, 1)
+				resolve();
+			}	
+		})
 	}
 
 	/**
 	 * @param {string} userId
 	 * @param {object} team
-	 * @returns {void} update all teamsDatabase
+	 * @returns {Promise<void>} update all teamsDatabase
 	*/
-	setTeam(userId:string, team: object):void {
-		teamsDatabase[userId] = team;
+	setTeam(userId:string, team: object): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			teamsDatabase[userId] = team;
+			resolve();
+		})
 	}
 
 	/**
-	 * @returns {void} clear database
+	 * @returns {Promise<void>} clear database
 	 */
-	cleanUpTeam():void {
-		for(let user in teamsDatabase) {
-			teamsDatabase[user] = [];
-		}
+	cleanUpTeam():Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			for(let user in teamsDatabase) {
+				teamsDatabase[user] = [];
+				resolve();
+			}
+		})
 	}
 }

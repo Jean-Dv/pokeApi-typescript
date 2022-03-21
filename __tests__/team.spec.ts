@@ -48,7 +48,7 @@ describe('Suite of test teams', () => {
 				expect(responseLogin.statusCode).toBe(200);
 				let token = responseLogin.body.token;
 				const responsePostPokemon = await request(appServer)
-					.post(`${routerPrefix}/teams/pokemon`)
+					.post(`${routerPrefix}/teams/pokemons`)
 					.send({name: pokemonName})
 					.set('Authorization', `JWT ${token}`);
 					expect(responsePostPokemon.statusCode).toBe(201);
@@ -60,6 +60,30 @@ describe('Suite of test teams', () => {
 						expect(responseGetTeam.body.team.length).toBe(1);
 						expect(responseGetTeam.body.team[0].name).toContain(pokemonName);
 						expect(responseGetTeam.body.team[0].pokedexNumber).toBe(1);
+	});
+	test('should remove the pokemon at index', async () => {
+		let team = [{name: 'Charizard'}, {name: 'Blastoise'}, {name: 'Picachu'}]
+		const responseLogin = await request(appServer)
+			.post(`${routerPrefix}/auth/login`)
+			.set('Accept', 'application/json')
+			.send({email: 'admin@admin.com', password: '1234'});
+			expect(responseLogin.statusCode).toBe(200);
+			let token = responseLogin.body.token;
+			const responsePutTeam = await request(appServer)
+				.put(`${routerPrefix}/teams`)
+				.send({team: team})
+				.set('Authorization', `JWT ${token}`)
+				expect(responsePutTeam.statusCode).toBe(200);
+				const responseDeletePokemon = await request(appServer)
+					.delete(`${routerPrefix}/teams/pokemons/1`)
+					.set('Authorization', `JWT ${token}`);
+					expect(responseDeletePokemon.statusCode).toBe(200);
+					const responseGetTeam = await request(appServer)
+						.get(`${routerPrefix}/teams`)
+						.set('Authorization', `JWT ${token}`)
+						expect(responseGetTeam.statusCode).toBe(200);
+						expect(responseGetTeam.body.trainer).toContain('admin@admin.com');
+						expect(responseGetTeam.body.team.length).toBe(team.length - 1);
 	})
 })
 

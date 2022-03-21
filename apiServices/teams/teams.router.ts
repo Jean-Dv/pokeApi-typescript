@@ -1,16 +1,16 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 
-import {
-	getTeamOfUser,
-	setTeamOfUser,
-	addPokemon
-} from './teams.http';
+import { TeamHttpHandler } from './teams.http';
 
 export const teamsRouter = Router();
+const teamHttpHandler = new TeamHttpHandler();
 
 teamsRouter.route('/')
-.get(getTeamOfUser)
-.put(setTeamOfUser)
+.get(teamHttpHandler.getTeamOfUser)
+.put(teamHttpHandler.setTeamOfUser)
 
-teamsRouter.route('/pokemon')
-.post(addPokemon)
+teamsRouter.route('/pokemons')
+.post(teamHttpHandler.addPokemon)
+
+teamsRouter.route('/pokemons/:pokeid')
+.delete(teamHttpHandler.deletePokemon)
