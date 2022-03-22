@@ -1,4 +1,4 @@
-import { Server } from "./bin/server"; 
+import { Server } from "./bin/server";
 
 import { UserController } from './apiServices/auth/auth.controller';
 const server = new Server();

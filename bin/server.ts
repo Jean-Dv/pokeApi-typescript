@@ -1,9 +1,10 @@
 import express, { Application } from 'express';
-import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
 import { teamsRouter } from '../apiServices/teams/teams.router';
 import { authRouter } from '../apiServices/auth/auth.router';
 import { MiddlewareJson } from '../middleware/jwtToken';
+import { getUri, connect } from '../services/mongoDb';
 
 const middlewareJwtPassport = new MiddlewareJson();
 
@@ -11,17 +12,21 @@ export class Server {
 	readonly app: Application;
 	readonly routerPrefix: string;
 	private listen: any;
+	private uri: string;
 
 	constructor() {
+		this.uri = getUri();
 		this.app = express();
+		this.config();
 		this.routerPrefix = '/api/v1';
 		this.middlewares();
-		this.config();
 		this.routes();
+		this.databaseConnection();
 	}
 
 	private config():void {
 		this.app.set("port", process.env.PORT || 3000);
+		dotenv.config();
 	}
 
 	private middlewares():void {
@@ -34,6 +39,10 @@ export class Server {
 	private routes():void {
 		this.app.use(`${this.routerPrefix}/teams`, teamsRouter);
 		this.app.use(`${this.routerPrefix}/auth`, authRouter);
+	}
+
+	private async databaseConnection() {
+		await connect(this.uri);
 	}
 
 	start():void {

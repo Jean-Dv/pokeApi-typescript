@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node ./dist/src/server.js",
-    "dev": "nodemon ./app.ts --exec ts-node",
+    "dev": "NODE_ENV=development nodemon ./app.ts --exec ts-node",
     "build": "tsc",
     "lint": "eslint --ignore-path .gitignore . --ext .ts",
     "lint:fix": "npm run lint -- --fix",
