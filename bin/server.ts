@@ -1,5 +1,4 @@
 import express, { Application } from 'express';
-import dotenv from 'dotenv';
 
 import { teamsRouter } from '../apiServices/teams/teams.router';
 import { authRouter } from '../apiServices/auth/auth.router';
@@ -26,7 +25,6 @@ export class Server {
 
 	private config():void {
 		this.app.set("port", process.env.PORT || 3000);
-		dotenv.config();
 	}
 
 	private middlewares():void {
