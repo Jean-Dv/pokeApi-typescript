@@ -1,7 +1,9 @@
+import { TeamModel } from "./teams.model";
+import { to } from '../../config/tools/to';
+
 interface NamePokemon {
 	[name: string]: any;
 }
-const teamsDatabase: { [key: string]: NamePokemon } = {};
 
 export class TeamsController {
 	constructor() {}
@@ -12,7 +14,8 @@ export class TeamsController {
 	*/
 	bootstrapTeam(userId: string):Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			teamsDatabase[userId] = [];
+			let newTeam = new TeamModel({userId: userId, team:[]})
+			await newTeam.save();
 			resolve();
 		})
 	}
@@ -23,7 +26,11 @@ export class TeamsController {
 	*/
 	getTeamOfUser(userId: string): Promise<NamePokemon> {
 		return new Promise(async (resolve, reject) => {
-			resolve(teamsDatabase[userId]);
+			let [err, dbTeam] = await to(TeamModel.findOne({userId: userId}).exec())
+			if (err) {
+				reject(err);
+			}
+			resolve(dbTeam.team);
 		})
 	}
 	
@@ -34,8 +41,17 @@ export class TeamsController {
 	*/
 	addPokemon(userId:string, pokemon: object): Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			teamsDatabase[userId].push(pokemon);
-			resolve();
+			let [err, dbTeam] = await to(TeamModel.findOne({userId: userId}).exec());
+			if (err) {
+				reject(err);
+			}
+			if (dbTeam.team.length == 6) {
+				reject('Already have 6 pokemon');
+			} else {
+				dbTeam.team.push(pokemon);
+				await dbTeam.save();
+				resolve();
+			}
 		})
 	}
 
@@ -46,10 +62,15 @@ export class TeamsController {
 	 */
 	deletePokemonAt(userId:string, pokemonIndex: number): Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			if(teamsDatabase[userId][pokemonIndex]) {
-				teamsDatabase[userId].splice(pokemonIndex, 1)
-				resolve();
-			}	
+			let [err, dbTeam] = await to(TeamModel.findOne({userId: userId}).exec());
+			if (err || !dbTeam) {
+				reject(err)
+			}
+			if (dbTeam.team[pokemonIndex]) {
+				dbTeam.team.splice(pokemonIndex, 1);
+			}
+			await dbTeam.save();
+			resolve();
 		})
 	}
 
@@ -60,7 +81,13 @@ export class TeamsController {
 	*/
 	setTeam(userId:string, team: object): Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			teamsDatabase[userId] = team;
+			let [err, dbTeam] = await to(TeamModel.updateOne(
+				{userId: userId},
+				{$set: {team: team}},
+				{upsert: true}).exec());
+			if (err || !dbTeam) {
+				return reject(err);
+			}
 			resolve();
 		})
 	}
@@ -70,10 +97,8 @@ export class TeamsController {
 	 */
 	cleanUpTeam():Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			for(let user in teamsDatabase) {
-				teamsDatabase[user] = [];
-				resolve();
-			}
+			await TeamModel.deleteMany({}).exec();
+			resolve();
 		})
 	}
 }

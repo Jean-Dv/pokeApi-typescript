@@ -1,4 +1,5 @@
-import express, { Application } from 'express'
+import express, { Application } from 'express';
+import mongoose from 'mongoose';
 
 import { teamsRouter } from '../apiServices/teams/teams.router';
 import { authRouter } from '../apiServices/auth/auth.router';
@@ -19,23 +20,23 @@ export class Server {
 		this.routes();
 	}
 
-	config():void {
+	private config():void {
 		this.app.set("port", process.env.PORT || 3000);
 	}
 
-	middlewares():void {
+	private middlewares():void {
 		middlewareJwtPassport.init();
 		this.app.use(express.json());
 		this.app.use(express.urlencoded({ extended: false }));
 		this.app.use(middlewareJwtPassport.passportJwtMiddeware);
 	}
 
-	routes():void {
+	private routes():void {
 		this.app.use(`${this.routerPrefix}/teams`, teamsRouter);
 		this.app.use(`${this.routerPrefix}/auth`, authRouter);
 	}
 
-	start() {
+	start():void {
 		this.listen = this.app.listen(this.app.get("port"), () => {
 			console.log(
 				`[*] Server is running at http://localhost:${this.app.get("port")}`,
@@ -43,7 +44,7 @@ export class Server {
 		})
 	}
 
-	close() {
+	close():void {
 		this.listen.close();
 	}
 }

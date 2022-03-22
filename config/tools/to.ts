@@ -1,7 +1,7 @@
-export const to = (promise: Promise<any>) => {
+export const to = (promise: Promise<any> | any) => {
 	return promise
-	.then(data => {
+	.then((data: any) => {
 		return [null, data];
 	})
-	.catch(err => [err, null])
+	.catch((err: any) => [err, null])
 }

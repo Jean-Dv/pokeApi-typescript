@@ -2,18 +2,27 @@ import request from 'supertest';
 
 import { appServer, server, routerPrefix } from '../app';
 import { UserController } from '../apiServices/auth/auth.controller';
-import {TeamsController} from '../apiServices/teams/teams.controller';
+import { TeamsController } from '../apiServices/teams/teams.controller';
+import { storeTeam } from '../apiServices/teams/teams.service';
+import { getUri, connect, closeDb } from '../services/mongoDb';
+
+jest.mock('../apiServices/teams/teams.service');
 
 const userController = new UserController();
 const teamsDatabase = new TeamsController();
 
-beforeEach(() => {
-	userController.registerUser('admin@admin.com', '1234')
+beforeAll(async () => {
+	const uri = await getUri();
+	await connect(uri);
 })
 
-afterEach(() => {
-	userController.cleanUpUsers()
-	teamsDatabase.cleanUpTeam();
+beforeEach(async () => {
+	await userController.registerUser('admin@admin.com', '1234')
+}, 60000)
+
+afterEach(async () => {
+	await userController.cleanUpUsers()
+	await teamsDatabase.cleanUpTeam();
 })
 
 describe('Suite of test teams', () => {
@@ -87,6 +96,7 @@ describe('Suite of test teams', () => {
 	})
 })
 
-afterAll(() => {
+afterAll(async() => {
 	server.close();
+	await closeDb();
 })

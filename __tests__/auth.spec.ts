@@ -2,14 +2,28 @@ import request from 'supertest';
 
 import { appServer, server, routerPrefix } from '../app';
 import { UserController } from '../apiServices/auth/auth.controller';
+import { TeamsController } from '../apiServices/teams/teams.controller';
+import { getUri, connect, closeDb } from '../services/mongoDb/index';
 
 const userController = new UserController();
+const teamsController = new TeamsController();
 
-beforeAll(() => {
-	userController.registerUser('admin@admin.com', '1234')
+jest.mock('../apiServices/auth/auth.service');
+
+beforeAll(async () => {
+	const uri = await getUri();
+	await connect(uri);
 })
 
-beforeEach(()=>{}, 50000)
+beforeEach(async()=>{
+	await userController.registerUser('admin@admin.com', '1234')
+}, 50000)
+
+afterEach(async () => {
+	await userController.cleanUpUsers();
+	await teamsController.cleanUpTeam();
+})
+
 
 describe(`POST ${routerPrefix}`, () => {
 	test('should return 401 when no jwt token available', async () => {
@@ -44,7 +58,7 @@ describe(`POST ${routerPrefix}`, () => {
 	})
 })
 
-afterAll(() => {
+afterAll(async () => {
 	server.close();
-	userController.cleanUpUsers();
+	await closeDb();
 }) 

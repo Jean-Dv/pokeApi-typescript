@@ -2,13 +2,14 @@ import { v4 } from 'uuid';
 
 import { comparePassword, hashPasswordSync } from '../../config/hashed';
 import { TeamsController } from '../teams/teams.controller';
+import { UserModel } from './auth.model';
+import { to } from '../../config/tools/to';
 
 interface UsersDatabase {
 	email: string;
 	password: string;
 }
 
-let usersDatabase: { [userId:string]: UsersDatabase } = {};
 const teamsController = new TeamsController();
 
 export class UserController {
@@ -21,10 +22,12 @@ export class UserController {
 		return new Promise(async (resolve, reject) => {
 			let hashedPwd = hashPasswordSync(password);
 			let userId = v4();
-			usersDatabase[userId] = {
+			let newUser = new UserModel({
+				userId: userId,
 				email: email,
 				password: hashedPwd
-			}
+			})
+			await newUser.save();
 			await teamsController.bootstrapTeam(userId);
 			resolve();
 		})
@@ -36,10 +39,11 @@ export class UserController {
 	 */
 	getUserIdFromEmail(email: string): Promise<UsersDatabase> {
 		return new Promise(async (resolve, reject) => {
-			for(let user in usersDatabase) {
-				if(usersDatabase[user].email === email) {
-					resolve(usersDatabase[user]);
-				}
+			let [err, result] = await to(UserModel.findOne({email: email}).exec());
+			if (err) {
+				reject(err);
+			} else {
+				resolve(result);
 			}
 		})
 	}
@@ -50,12 +54,11 @@ export class UserController {
 	 */
 	getUserId(email: string):Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			for(let user in usersDatabase) {
-				if(usersDatabase[user].email === email) {
-					resolve(user);
-				}
+			let [err, result] = await to(UserModel.findOne({email: email}).exec());
+			if (err) {
+				reject(err);
 			}
-			reject('No user found');
+			resolve(result.userId)
 		})
 	}
 	
@@ -65,7 +68,11 @@ export class UserController {
 	 */
 	getUser(userId: string): Promise<UsersDatabase> {
 		return new Promise(async (resolve, reject) => {
-			resolve(usersDatabase[userId]);
+			let [err, result] = await to(UserModel.findOne({userId: userId}).exec());
+			if (err) {
+				reject(err);
+			}
+			resolve(result)
 		})
 	}
 
@@ -74,13 +81,20 @@ export class UserController {
 	 * @param {string} password -> Password coming from request
 	 * @return {boolean} comparePassword -> compare plain password with hashed in database
 	 */
-	checkUserCredentials(email: string, password: string): Promise<boolean> {
+	checkUserCredentials(email: string, password: string): Promise<any> {
 		return new Promise(async (resolve, reject) => {
-			let user = await (this.getUserIdFromEmail(email));
-			if(user) {
-				resolve(comparePassword(password, user.password));
+			let [err, user] = await to(this.getUserIdFromEmail(email));
+			if (user || err != null) {
+				comparePassword(password, user.password, (err: any, result:any) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(result)
+					}
+				});
+			} else {
+				reject(err);
 			}
-			reject(false);
 		})
 	}
 
@@ -89,7 +103,7 @@ export class UserController {
 	 */
 	cleanUpUsers(): Promise<void> {
 		return new Promise(async (resolve, reject) => {
-			usersDatabase = {};
+			await UserModel.deleteMany({}).exec();
 			resolve();
 		})
 	}
