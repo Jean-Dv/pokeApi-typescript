@@ -11,14 +11,9 @@ jest.mock('../apiServices/teams/teams.service');
 const userController = new UserController();
 const teamsDatabase = new TeamsController();
 
-beforeAll(async () => {
-	const uri = await getUri();
-	await connect(uri);
-})
-
 beforeEach(async () => {
 	await userController.registerUser('admin@admin.com', '1234')
-}, 60000)
+})
 
 afterEach(async () => {
 	await userController.cleanUpUsers()

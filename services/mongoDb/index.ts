@@ -2,24 +2,24 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 mongoose.Promise = Promise;
-var mongoServer: any;
+let mongoServer: any;
 
-export const getUri = (): string => {
-	mongoServer = MongoMemoryServer.create();
-	if (process.env.NODE_ENV === 'test') {
-		return mongoServer.getUri();
-	} else if (process.env.NODE_ENV === 'development') {
-		return process.env.DB_CNN_DEV || '';
-	} else if (process.env.NODE_ENV === 'production') {
-		return process.env.DB_CNN_PROD || '';
+interface Options extends Record<string, Promise<string> | string>{}
+
+export const getUri = async (): Promise<string> => {
+	mongoServer = await MongoMemoryServer.create();
+	const options: Options = {
+		'test': mongoServer.getUri(),
+		'development': process.env.DB_CNN_DEV || '',
+		'production': process.env.DB_CNN_PROD || '',
 	}
-	return '';
+	return (options[process.env.NODE_ENV || 'development'])
 }
 
-export const connect = async (uri: string ) => {
+export const connect = async (uri: Promise<string>) => {
 	try {
-		await mongoose.connect(uri);
-		console.log(`MongoDB sucessfully connected to ${uri}`)
+		mongoose.connect(await uri);
+		console.log(`MongoDB sucessfully connected to ${await uri}`)
 	} catch (err) {
 		console.log(err);
 		throw new Error('Error initializing database...')

@@ -11,7 +11,7 @@ export class Server {
 	readonly app: Application;
 	readonly routerPrefix: string;
 	private listen: any;
-	private uri: string;
+	private uri: Promise<string>;
 
 	constructor() {
 		this.uri = getUri();
